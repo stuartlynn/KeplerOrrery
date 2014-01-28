@@ -148,28 +148,28 @@ module planet_shaft(order_no, ratio, seperation, thickness){
 	}
 }
 
-translate([0, 400,0]){
+translate([0, 300,0]){
 	spindle(100,100,ms_bore/2);
 }
 
-translate([400,0,0]){
-	color("red"){
+translate([300,0,vertical_gear_speration*len(planet_periods)-1]){
+	rotate([0,180,0]){
+
 		main_shaft_gears(planet_periods);
 	}
 }
 
-
-translate([0, -400, 0]){
+translate([0, -200, 0]){
 	spindle(200,50, ps_cylinder_r(len(planet_periods)-1)-ps_thickness-8);
 }
 
 
 for(i = [0:len(planet_periods)-1]){
-	translate([-200*i,0,0]){
+	translate([-160*i,0,0]){
 		planet_shaft(i, planet_periods[0]/planet_periods[i], 20, ps_thickness);
 	}
 
-	translate([400,400 + i*100,0]){
+	translate([250,250 + i*100,0]){
 		planet_arm( radius =ps_cylinder_r(i) , length= planet_distances[i]*length_scale, height=100, planet_size=planet_sizes[i]*size_scale);
 	}	
 }
