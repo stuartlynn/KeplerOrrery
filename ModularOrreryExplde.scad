@@ -10,6 +10,7 @@ length_scale = 2000;
 
 shaft_seperation = 200;
 vertical_gear_speration = 20;
+
 ms_base_radius = 90;
 ms_radius_inc  = 10;
 ms_key_width   = 5;
@@ -22,7 +23,7 @@ orrery_shaft_height= 200;
 
 //planet shaft
 ps_base_radius = 20;
-ps_radius_inc  = 6;
+ps_radius_inc  = 8;
 ps_thickness   = 4;
 
 function main_gears_bore_diameter(no,base_radius,radius_inc) = base_radius-(radius_inc*no);
@@ -61,7 +62,7 @@ module main_shaft(planet_sizes, planet_periods){
 			difference(){
 				cylinder(r=main_gears_bore_diameter(i,ms_base_radius,ms_radius_inc)
 					  , h=vertical_gear_speration);
-				cylinder(r=core_gap, h=vertical_gear_speration);
+				cylinder(r=ms_bore, h=vertical_gear_speration);
 			}
 			translate([-ms_key_width/2,main_gears_bore_diameter(i,ms_base_radius,ms_radius_inc)-2,0]){
 				cube([ms_key_width,ms_key_length-2,vertical_gear_speration]);
@@ -124,9 +125,9 @@ module key_gear(ratio,size, key_size, thickness,midhole){
 
 
 
-module spindle(height=100, base_radius=30, thickness=5){
+module spindle(height=100, base_radius=30, thickness=3){
 	cylinder(center=false, r=thickness, h=height);
-	cylinder(center=false,r=base_radius, h=3);
+	cylinder(center=false,r=base_radius, h=20);
 }
 
 module planet_shaft(order_no, ratio, seperation, thickness){
@@ -148,20 +149,22 @@ module planet_shaft(order_no, ratio, seperation, thickness){
 	}
 }
 
-translate([0, -200,0]){
-	spindle(100,100,ms_bore/2);
+translate([0, -220,0]){
+	spindle(100,100,ms_bore/2,20);
 	translate([0,-15,0]){
-		cube([180,30,3]);
+		cube([180,30,20]);
 	}
 }
 
 translate([200, -220, 0]){
-	spindle(200,50, ps_cylinder_r(len(planet_periods)-1)-ps_thickness-8);
+	spindle(250,50, ps_cylinder_r(len(planet_periods)-1)-ps_thickness-8, 20);
 }
 
 
-translate([300,0,0]){
-	main_shaft_gears(planet_periods);
+translate([300,0,vertical_gear_speration*2]){
+	rotate([180,0,0]){
+		main_shaft_gears(planet_periods);
+	}
 }
 
 
@@ -173,7 +176,7 @@ for(i = [0:len(planet_periods)-1]){
 	}
 
 	translate([-100,140 + i*100,0]){
-		planet_arm( radius =ps_cylinder_r(i) , length= planet_distances[i]*length_scale, height=100, planet_size=planet_sizes[i]*size_scale);
+		planet_arm( radius =ps_cylinder_r(len(planet_periods)-1-i)+3 , length= planet_distances[i]*length_scale, height=100, planet_size=planet_sizes[i]*size_scale);
 	}	
 }
 
