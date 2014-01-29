@@ -150,15 +150,21 @@ module planet_shaft(order_no, ratio, seperation, thickness){
 
 translate([-200, -200,0]){
 	spindle(100,100,ms_bore/2);
-}
-
-translate([300,0,0]){
-	main_shaft_gears(planet_periods);
+	translate([0,-15,0]){
+		cube([180,30,3]);
+	}
 }
 
 translate([0, -200, 0]){
 	spindle(200,50, ps_cylinder_r(len(planet_periods)-1)-ps_thickness-8);
 }
+
+
+translate([300,0,0]){
+	main_shaft_gears(planet_periods);
+}
+
+
 
 
 for(i = [0:len(planet_periods)-1]){
