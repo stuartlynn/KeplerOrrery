@@ -148,14 +148,14 @@ module planet_shaft(order_no, ratio, seperation, thickness){
 	}
 }
 
-translate([-200, -200,0]){
+translate([0, -200,0]){
 	spindle(100,100,ms_bore/2);
 	translate([0,-15,0]){
 		cube([180,30,3]);
 	}
 }
 
-translate([0, -200, 0]){
+translate([200, -220, 0]){
 	spindle(200,50, ps_cylinder_r(len(planet_periods)-1)-ps_thickness-8);
 }
 
