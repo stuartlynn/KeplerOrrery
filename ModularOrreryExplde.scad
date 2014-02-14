@@ -1,9 +1,14 @@
 use <parametric_involute_gear_v5.0.scad>
 
 //Kepler 10 
-planet_sizes = [1.416, 2.227];
-planet_periods= [0.837495, 3.29485];
-planet_distances = [ 0.01684, 0.2407];
+
+planet_sizes = [1.416, 2, 2.227];
+planet_periods= [0.837495,1.5, 3.29485];
+planet_distances = [ 0.0584,0.1, 0.2407];
+
+//planet_sizes = [0.119, 0.089, 0.32, 0.24];//, 0.26, 0.74, 1.03] ;
+//planet_periods= [7.0082, 8.719, 59.736, 91.9391];//, 124.91, 210, 331] ;
+//planet_distances = [0.074, 0.089, 0.32, 0.42];//, 0.48, 0.71, 1.01] ;
 
 size_scale = 20;
 length_scale = 2000;
@@ -17,29 +22,29 @@ ms_key_width   = 5;
 ms_key_length  = 10;
 ms_bore 		 = 30;
 //Gears 
-base_gear_no  = 40;
 
-orrery_shaft_height= 200;
+base_gear_no  = 27;
+
+orrery_shaft_height= 300;
 
 //planet shaft
 ps_base_radius = 20;
-ps_radius_inc  = 8;
+ps_radius_inc  = 7;
 ps_thickness   = 4;
+
 
 function main_gears_bore_diameter(no,base_radius,radius_inc) = base_radius-(radius_inc*no);
 function pair_pitch(base_gear_no, ratio, sep) = (1+ ratio)*base_gear_no/(2.0*sep);
-function ps_cylinder_r(order_no) = (ps_base_radius+ order_no*ps_radius_inc);
+function ps_cylinder_r(order_no) = (ps_base_radius+ (order_no)*ps_radius_inc);
 
 module main_shaft_gears(planet_periods){
 
-
 	no_planets = len(planet_periods);
-
 	for(i = [0:1:no_planets-1]){
 		translate([0,0,i*vertical_gear_speration]){
 
 			gear(number_of_teeth = base_gear_no,
-				diametral_pitch  = pair_pitch(base_gear_no, planet_periods[0]/planet_periods[i],shaft_seperation ),
+				diametral_pitch  = pair_pitch(base_gear_no, planet_periods[i]/planet_periods[1],shaft_seperation ),
 				bore_diameter    = ms_bore,
 		          gear_thickness   = vertical_gear_speration,
 				rim_thickness = vertical_gear_speration,
@@ -49,39 +54,16 @@ module main_shaft_gears(planet_periods){
 	}
 }
 
-
-module main_shaft(planet_sizes, planet_periods){
-	start_height = 0;
-	base_radius  = 90; 
-	radius_inc   = 10;
-	no_planets   = len(planet_sizes);
-	core_gap     = 10;
-
-	for( i = [1:1:no_planets] ){
-		translate([0,0, (vertical_gear_speration*(i-1)) + start_height]){
-			difference(){
-				cylinder(r=main_gears_bore_diameter(i,ms_base_radius,ms_radius_inc)
-					  , h=vertical_gear_speration);
-				cylinder(r=ms_bore, h=vertical_gear_speration);
-			}
-			translate([-ms_key_width/2,main_gears_bore_diameter(i,ms_base_radius,ms_radius_inc)-2,0]){
-				cube([ms_key_width,ms_key_length-2,vertical_gear_speration]);
-			}
-		}
-	}
-}
-
 module planet_arm(radius=40, thickness=5, length=100, height=100, planet_size=20){
 	difference(){
-
-		cylinder(r=radius+ps_thickness, h=10);
-		cylinder(r=radius+ps_thickness-thickness, h=10);
+		cylinder(r=radius+thickness, h=20);
+		cylinder(r=radius, h=20);
 	}
-	translate([radius+ps_thickness-2,-5,0]){
-		cube([length,10,10]);
+	translate([radius+ps_thickness-2,-10,0]){
+		cube([length,20,20]);
 		translate([length,0,0]){
-			cube([10,10,height]);
-			translate([5,5,height-5]){
+			cube([20,20,height]);
+			translate([10,10,height-10]){
 				sphere(r=planet_size);
 			}
 		}
@@ -91,39 +73,16 @@ module planet_arm(radius=40, thickness=5, length=100, height=100, planet_size=20
 }
 
 
-module gear_pair(seperation, base_gear_no, ratio){
-	new_gear_no = ratio *base_gear_no;
-	pitch  = (base_gear_no + new_gear_no )/(2.0*seperation);
-	gear(number_of_teeth = base_gear_no,
-		diametral_pitch  = pitch,
-		bore_diameter    = 10);
 
-	translate([seperation,0,0]){
-		gear(number_of_teeth = new_gear_no,
-			diametral_pitch  = pitch,
-			bore_diameter    = 10);
-	}
-}
 
-module key_gear(ratio,size, key_size, thickness,midhole){
+module star(radius= 10, hole=10){
 	difference(){
-		gear (circular_pitch=1200,
-					  gear_thickness = 10,
-					  rim_thickness = 13,
-					  hub_thickness = 15,
-					  circles=0);
-
-		union(){
-			cylinder(r=midhole, h = thickness);
-			translate([0, key_size, 0]){
-				cube([key_size,key_size,thickness*2],center=true); 
-			}
+		sphere(r=radius);
+		translate([0,0,-radius]){
+			cylinder(h=radius, r=hole);
 		}
 	}
 }
-
-
-
 
 module spindle(height=100, base_radius=30, thickness=3){
 	cylinder(center=false, r=thickness, h=height);
@@ -133,10 +92,11 @@ module spindle(height=100, base_radius=30, thickness=3){
 module planet_shaft(order_no, ratio, seperation, thickness){
 	
 	height = orrery_shaft_height/len(planet_sizes);
-	
+	echo("planet shaft width", order_no, ps_cylinder_r(order_no));
+
 	difference(){
 		union(){
-			cylinder(h=height+ 40*(2-order_no), r =  ps_cylinder_r(order_no));
+			cylinder(h=orrery_shaft_height -(height*(order_no)), r =  ps_cylinder_r(order_no));
 			gear(number_of_teeth = base_gear_no*ratio,
 				diametral_pitch  = pair_pitch(base_gear_no, ratio,shaft_seperation ),
 				bore_diameter    =  ps_cylinder_r(order_no)*2,
@@ -149,41 +109,45 @@ module planet_shaft(order_no, ratio, seperation, thickness){
 	}
 }
 
+scale([0.14,0.14,0.14]){
+
 translate([0, -220,0]){
-	spindle(100,100,ms_bore/2,20);
+	spindle( (len(planet_periods)+1)*vertical_gear_speration ,100,(ms_bore/2)-3);
 	translate([0,-15,0]){
 		cube([180,30,20]);
 	}
 }
 
 translate([200, -220, 0]){
-	spindle(250,50, ps_cylinder_r(len(planet_periods)-1)-ps_thickness-8, 20);
+	spindle(400,50, ps_cylinder_r(0)-ps_thickness-3);
 }
 
 
-translate([300,0,vertical_gear_speration*2]){
-	rotate([180,0,0]){
-		main_shaft_gears(planet_periods);
-	}
+translate([300,0,0]){
+	main_shaft_gears(planet_periods);
 }
-
-
 
 
 for(i = [0:len(planet_periods)-1]){
-	translate([-160*i,0,0]){
-		planet_shaft(i, planet_periods[0]/planet_periods[i], 20, ps_thickness);
+	translate([-270*i,0,0]){
+		planet_shaft(i, planet_periods[i]/planet_periods[1], 20, ps_thickness);
 	}
 
-	translate([-100,140 + i*100,0]){
-		planet_arm( radius =ps_cylinder_r(len(planet_periods)-1-i)+3 , length= planet_distances[i]*length_scale, height=100, planet_size=planet_sizes[i]*size_scale);
+	translate([-300,150 + i*100,0]){
+//	translate([-190*i,0,300-i*10]){
+		color("red"){
+			planet_arm( radius = ps_cylinder_r(i)+2.5, length= planet_distances[i]*length_scale, height=(i+1)*60, planet_size=planet_sizes[i]*size_scale);
+		}
 	}	
 }
 
-			
+translate([100,120,40]){
+	rotate([180,0,-40]){
+		star(40,ps_cylinder_r(0)-ps_thickness);
+	}
+}
 
 
-
-
+}
 
 
